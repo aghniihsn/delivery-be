@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const { protect, adminOnly } = require('../middlewares/auth.middleware');
 const roleMiddleware = require('../middlewares/role.middleware');
 
-router.use(authMiddleware);
+router.use(protect);
 
+// Driver profile routes
+router.get('/me', userController.getMyProfile);
+router.put('/profile', userController.updateProfile);
+router.put('/change-password', userController.changePassword);
+
+// Admin routes
 router.get('/', roleMiddleware('admin'), userController.getAllUsers);
 router.get('/:id', userController.getUserById);
 router.put('/:id', userController.updateUser);

@@ -1,5 +1,14 @@
 const Task = require('../models/task.model');
 
+exports.getAllTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find().populate('assignedTo', 'name email');
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.createTask = async (req, res) => {
   try {
     const { title, taskId, assignedTo, destination } = req.body;

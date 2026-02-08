@@ -15,6 +15,7 @@ exports.register = async (req, res) => {
       _id: user._id,
       name: user.name,
       role: user.role,
+      profileCompleted: user.profileCompleted,
       token: jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
     });
   } catch (error) {
@@ -32,6 +33,8 @@ exports.login = async (req, res) => {
         _id: user._id,
         name: user.name,
         role: user.role,
+        phone: user.phone,
+        profileCompleted: user.profileCompleted,
         token: jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
       });
     } else {
