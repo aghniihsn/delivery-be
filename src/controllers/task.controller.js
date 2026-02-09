@@ -33,17 +33,6 @@ exports.createTask = async (req, res) => {
     if (exists) {
       return res.status(400).json({ message: `Nomor resi ${taskId} sudah ada, coba lagi.` });
     }
-  // try {
-  //   const { title, taskId, description, assignedTo, destination, recipientName, recipientPhone, notes } = req.body;
-
-  //   if (!title || !taskId) {
-  //     return res.status(400).json({ message: 'title dan taskId wajib diisi' });
-  //   }
-
-  //   const exists = await Task.findOne({ taskId });
-  //   if (exists) {
-  //     return res.status(400).json({ message: `taskId "${taskId}" sudah digunakan` });
-  //   }
 
     let status = 'pending';
     let assignedAt = null;
@@ -374,8 +363,11 @@ exports.uploadProof = async (req, res) => {
       return res.status(403).json({ message: 'Bukan task Anda' });
     }
 
-    if (task.status !== 'delivered') {
-      return res.status(400).json({ message: 'Upload bukti hanya untuk task yang sudah delivered' });
+    // MODIFIKASI: Izinkan upload jika status 'on_delivery' ATAU 'delivered'
+    if (task.status !== 'on_delivery' && task.status !== 'delivered') {
+      return res.status(400).json({ 
+        message: 'Foto hanya bisa diunggah saat status Dalam Pengiriman' 
+      });
     }
 
     if (!req.file) {
@@ -385,7 +377,7 @@ exports.uploadProof = async (req, res) => {
     task.imageUrl = req.file.path;
     await task.save();
 
-    res.json({ message: 'Bukti pengiriman berhasil diupload', task });
+    res.json({ message: 'Bukti foto berhasil disimpan', task });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
