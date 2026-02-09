@@ -243,9 +243,6 @@ exports.assignBatchTasks = async (req, res) => {
   }
 };
 
-// ======================== DRIVER ========================
-
-/// [DRIVER] Ambil task milik driver yang login
 exports.getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user.id }).sort({ createdAt: -1 });
@@ -255,16 +252,12 @@ exports.getMyTasks = async (req, res) => {
   }
 };
 
-// Aturan transisi status yang diperbolehkan untuk driver
 const ALLOWED_TRANSITIONS = {
   'assigned': ['on_delivery'],           // Kurir ambil paket
   'on_delivery': ['delivered', 'rescheduled', 'failed'],  // Hasil pengiriman
   'rescheduled': ['on_delivery'],        // Coba kirim ulang
 };
 
-/// [DRIVER] Update status task pengiriman
-/// PATCH /tasks/:id/status
-/// Body: { status, notes?, failedReason?, rescheduledDate?, rescheduledReason? }
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { status, notes, failedReason, rescheduledDate, rescheduledReason } = req.body;
@@ -352,15 +345,19 @@ exports.updateTaskStatus = async (req, res) => {
     await task.save();
 
     // Pesan response yang informatif
-    const statusMessages = {
-      'on_delivery': 'Paket sedang dalam pengiriman',
-      'delivered': 'Pengiriman berhasil diselesaikan!',
-      'rescheduled': `Pengiriman dijadwalkan ulang ke ${task.rescheduledDate.toLocaleDateString('id-ID')}`,
-      'failed': 'Pengiriman gagal dicatat',
-    };
+    let responseMessage = 'Status berhasil diperbarui';
+    if (status === 'on_delivery') {
+      responseMessage = 'Paket sedang dalam pengiriman';
+    } else if (status === 'delivered') {
+      responseMessage = 'Pengiriman berhasil diselesaikan!';
+    } else if (status === 'rescheduled' && task.rescheduledDate) {
+      responseMessage = `Pengiriman dijadwalkan ulang ke ${task.rescheduledDate.toLocaleDateString('id-ID')}`;
+    } else if (status === 'failed') {
+      responseMessage = 'Pengiriman gagal dicatat';
+    }
 
     res.json({ 
-      message: statusMessages[status] || 'Status berhasil diperbarui', 
+      message: responseMessage, 
       task,
     });
   } catch (error) {
@@ -368,8 +365,6 @@ exports.updateTaskStatus = async (req, res) => {
   }
 };
 
-/// [DRIVER] Upload bukti foto pengiriman
-/// PUT /tasks/:id/upload-proof
 exports.uploadProof = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
