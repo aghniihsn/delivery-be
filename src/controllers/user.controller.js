@@ -1,6 +1,35 @@
 const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 
+// ============ DRIVER LOCATION ============
+
+exports.updateLocation = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+    if (latitude == null || longitude == null) {
+      return res.status(400).json({ message: 'latitude dan longitude wajib diisi' });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { currentLocation: { latitude, longitude, updatedAt: new Date() } },
+      { new: true }
+    ).select('-password');
+    res.json({ message: 'Lokasi diperbarui', location: user.currentLocation });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getDriverLocation = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('name currentLocation');
+    if (!user) return res.status(404).json({ message: 'Driver tidak ditemukan' });
+    res.json({ name: user.name, location: user.currentLocation });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ============ DRIVER PROFILE ENDPOINTS ============
 
 /// Update profile driver (nama, phone) + tandai profileCompleted = true

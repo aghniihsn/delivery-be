@@ -10,9 +10,11 @@ router.use(protect);
 router.get('/me', userController.getMyProfile);
 router.put('/profile', userController.updateProfile);
 router.put('/change-password', userController.changePassword);
+router.put('/location', userController.updateLocation);
 
 // Admin routes
 router.get('/', roleMiddleware('admin'), userController.getAllUsers);
+router.get('/:id/location', userController.getDriverLocation);
 router.get('/:id', userController.getUserById);
 router.put('/:id', userController.updateUser);
 router.delete('/:id', roleMiddleware('admin'), userController.deleteUser);
